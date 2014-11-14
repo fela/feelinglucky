@@ -7,7 +7,7 @@ class TransactionStore {
 
 import stellar.{Transaction, PaymentTransaction, API}
 
-object Hi {
+object Main {
   val account100 = "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb"
   val accountFela = "gHbvXso6jQEz9WLYvvQXqmzMa2knynrU41"
   val account = account100
