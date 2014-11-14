@@ -78,4 +78,3 @@ class PaymentTransaction(val json: JsValue) extends Transaction(json) {
     str
   }
 }
-

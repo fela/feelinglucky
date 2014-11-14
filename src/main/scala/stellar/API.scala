@@ -9,49 +9,60 @@ object API {
   val connTimeout = 30000
   val readTimeout = 100000
 
-  def account_tx(account: String, ledger_min: Int = -1, limit: Int = 5, offset: Int = 0): Unit = {
+  def account_tx(account: String, ledgerIndexMin: Int = 0, perPage: Int = 1000): List[Transaction] = {
 
-    // create request json object
-    val data: JsValue = Json.obj(
-      "method" -> "account_tx",
-      "params" ->  Json.arr(
-        Json.obj(
-          "account" -> account,
-          "ledger_min" -> -1,
-          "forward" -> true,
-          "limit" -> limit,
-          "offset" -> offset
+
+    // I use pagination terminology
+    def getPage(marker: Option[JsValue]) : (List[Transaction], Option[JsValue]) = {
+
+      val markerJson = marker match {
+        case Some(m) =>
+          Json.obj("marker" -> m)
+        case None =>
+          Json.obj()
+      }
+      val data: JsValue = Json.obj(
+        "method" -> "account_tx",
+        "params" ->  Json.arr(
+          Json.obj(
+            "account" -> account,
+            "ledger_index_min" -> ledgerIndexMin,
+            "forward" -> true,
+            "limit" -> perPage
+          ) ++ markerJson
         )
       )
-    )
 
-    // actual api request
-    val request = Http.postData(serverUrl, data.toString())
-      .option(HttpOptions.connTimeout(connTimeout))
-      .option(HttpOptions.readTimeout(readTimeout))
+      // actual api request
+      val request = Http.postData(serverUrl, data.toString())
+        .option(HttpOptions.connTimeout(connTimeout))
+        .option(HttpOptions.readTimeout(readTimeout))
 
-    if (request.responseCode != 200)
-      throw new Exception(s"Server answered with ${request.responseCode}")
+      if (request.responseCode != 200)
+        throw new Exception(s"Server answered with ${request.responseCode}")
+      val res = Json.parse(request.asString) \ "result"
+      require((res \ "status").as[String] == "success")
 
-    // parse response
-    val res = Json.parse(request.asString) \ "result"
-    val transactions : JsArray = (res \ "transactions").as[JsArray]
-    val tx_values : Seq[JsValue] = transactions.value
-
-    for (json <- tx_values) {
-      val transactionType = (json \ "tx" \ "TransactionType").as[String]
-      if (transactionType == "Payment") {
-        val tx = new PaymentDescription(json)
-        if (tx.destination == account) {
-          println(s"received ${tx.amount}")
-        } else {
-          if (tx.account != account)
-            throw new Exception(s"Transaction does not include ${account}")
-          println(s"send ${tx.amount}")
-        }
-      } else {
-        println(s"Non payment transaction: $transactionType")
-      }
+      val transactions = Transaction.parseList((res \ "transactions").as[JsArray])
+      //println(Json.prettyPrint(res))
+      val newMarker = (res \ "marker").asOpt[JsValue]
+      (transactions, newMarker)
     }
+
+    // gets all pages after the marker
+    def allPages(marker: Option[JsValue]=None) : List[Transaction] = {
+        val (newList, newMarker) = getPage(marker)
+        println(newMarker)
+        newMarker match {
+          case Some(m) =>
+            if (! newList.isEmpty)
+              newList ++ allPages(newMarker)
+            else
+              newList
+          case None => newList
+        }
+    }
+
+    return allPages()
   }
 }
