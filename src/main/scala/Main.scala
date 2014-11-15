@@ -1,3 +1,5 @@
+package org.lucky7.feelinglucky
+
 import stellar.{OutTransaction, Transaction, PaymentTransaction, API}
 
 import scala.collection
@@ -19,6 +21,8 @@ object Main {
     while (true) {
       mainLoop()
     }
+
+    API.close(5000)
   }
 
   // IN transactions that we don't need to handle anymore
