@@ -4,7 +4,7 @@ import stellar.{OutTransaction, Transaction}
 
 import Main._
 
-class SanityCheck extends FlatSpec with Matchers {
+/*class SanityCheck extends FlatSpec with Matchers {
 
   private val txnlog: String = io.Source.fromInputStream(getClass.getResourceAsStream("/txns.log")).getLines().mkString("")
 
@@ -54,4 +54,4 @@ class SanityCheck extends FlatSpec with Matchers {
     unprocessedInTransactions.size should be(2)
   }
 
-}
+}*/

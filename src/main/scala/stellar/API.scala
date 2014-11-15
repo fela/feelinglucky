@@ -2,10 +2,12 @@ package stellar
 
 import play.api.libs.json.{JsArray, Json, JsValue}
 
+import scala.util.Random
 import scalaj.http.{HttpOptions, Http}
 
 case class OutTransaction(blob: String, hash: String) {
   def submit(): Unit = {
+    println(s"! Submit for ${hash} ")
     API.submit(blob)
   }
 }
@@ -83,7 +85,8 @@ object API {
             "TransactionType" -> "Payment",
             "Account" -> account,
             "Destination" -> destination,
-            "Amount" -> amount.toString
+            "Amount" -> amount.toString,
+            "DestinationTag" -> Random.nextInt.toString
           )
         )
       )
