@@ -1,11 +1,7 @@
 // Test account
 // ghWhBkFnzWRwZxY5EMbyrswJdNk1rvfCJj
 
-class OutTransaction {
-
-}
-
-import stellar.{Transaction, PaymentTransaction, API}
+import stellar.{OutTransaction, Transaction, PaymentTransaction, API}
 
 object Main {
   val account100 = "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb"
@@ -56,11 +52,19 @@ object Main {
     ???
   }
   def createOutTransactions(transactions: List[Transaction]): Unit = {
-    // adds object to inProcessOutTransactions and removes to processedInTransactions
-    ???
+    // TODO: proper lottery, now I just return the same amount
+    def getAmount(t: Transaction) : Int = t match {
+      case p: PaymentTransaction => p.amount.toInt
+      case _ => throw new Exception("Can only get amount of payment")
+    }
+    inProcessOutTransactions ++= transactions.map(t =>
+      API.sign(account, t.account, "TODO", getAmount(t))
+    )
   }
   def runOutTransactions(): Unit = {
     /// runs all transactions in inProcessOutTransactions again
-    ???
+    for (t <- inProcessOutTransactions) {
+      t.submit()
+    }
   }
 }
