@@ -121,6 +121,27 @@ object API {
     )
   }
 
+  def makePayment(secret: String, receiver: String, sender: String, amount: String): Unit = {
+    val data: JsValue = Json.obj(
+      "method" -> "submit",
+      "params" ->  Json.arr(
+        Json.obj(
+          "secret" -> secret,
+          "tx_json" -> Json.obj(
+            "TransactionType" -> "Payment",
+            "Account" -> sender,
+            "Destination" -> receiver,
+            "Amount" -> amount
+          )
+        )
+      )
+    )
+    post(data, body => {
+      val res = Json.parse(body) \ "result"
+      require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
+    })
+
+  }
 
   def submit(blob: String): Unit = {
     val data: JsValue = Json.obj(
