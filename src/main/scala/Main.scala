@@ -1,7 +1,7 @@
 // Test account
 // ghWhBkFnzWRwZxY5EMbyrswJdNk1rvfCJj
 
-class TransactionStore {
+class OutTransaction {
 
 }
 
@@ -27,6 +27,10 @@ object Main {
     }
   }
 
+  var inProcessOutTransactions = Set[OutTransaction]()
+  var processedOutTransactions = Set[String]()
+  var processedInTransactions = Set[String]()
+
   def mainLoop(): Unit = {
     val txLog = getTransactionList()
     val (in, out) = splitInOut(txLog)
@@ -37,14 +41,26 @@ object Main {
   }
 
   def splitInOut(txLog: List[Transaction]): (List[Transaction], List[Transaction]) = {
-    ??? 
+    ???
   }
 
   def getTransactionList(): List[Transaction] = {
     API.account_tx(account)
   }
-  def markCompletedOutTransactions(transactions: List[Transaction]): Unit = ???
-  def findUnprocessedInTransactions(transactions: List[Transaction]): List[Transaction] = ???
-  def createOutTransactions(transactions: List[Transaction]): Unit = ???
-  def runOutTransactions(): Unit = ???
+  def markCompletedOutTransactions(transactions: List[Transaction]): Unit = {
+    // move transactions from inProcessOutTransactions to processedOutTransactions
+    ???
+  }
+  def findUnprocessedInTransactions(transactions: List[Transaction]): List[Transaction] = {
+    // finds transactions not in processedInTransactions
+    ???
+  }
+  def createOutTransactions(transactions: List[Transaction]): Unit = {
+    // adds object to inProcessOutTransactions and removes to processedInTransactions
+    ???
+  }
+  def runOutTransactions(): Unit = {
+    /// runs all transactions in inProcessOutTransactions again
+    ???
+  }
 }
