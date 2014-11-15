@@ -27,30 +27,38 @@ object Main {
   var processedOutTransactions = Set[String]()
   var processedInTransactions = Set[String]()
 
+  case class IncomingTxLog(txs: List[Transaction])
+  case class OutgoingTxLog(txs: List[Transaction])
+
+
   def mainLoop(): Unit = {
     val txLog = getTransactionList()
-    val (in, out) = splitInOut(txLog)
+    val (out, in) = splitOutIn(txLog)
     markCompletedOutTransactions(out)
     val unprocessedOut = findUnprocessedInTransactions(in)
     createOutTransactions(unprocessedOut)
     runOutTransactions()
   }
 
-  def splitInOut(txLog: List[Transaction]): (List[Transaction], List[Transaction]) = {
-    ???
-  }
-
   def getTransactionList(): List[Transaction] = {
     API.account_tx(account)
   }
-  def markCompletedOutTransactions(transactions: List[Transaction]): Unit = {
+
+  def splitOutIn(txLog: List[Transaction]): (OutgoingTxLog, IncomingTxLog) = {
+    val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == account)
+    (OutgoingTxLog(outgoing), IncomingTxLog(incoming))
+  }
+
+  def markCompletedOutTransactions(transactions: OutgoingTxLog): Unit = {
     // move transactions from inProcessOutTransactions to processedOutTransactions
     ???
   }
-  def findUnprocessedInTransactions(transactions: List[Transaction]): List[Transaction] = {
+
+  def findUnprocessedInTransactions(transactions: IncomingTxLog): List[Transaction] = {
     // finds transactions not in processedInTransactions
     ???
   }
+
   def createOutTransactions(transactions: List[Transaction]): Unit = {
     // TODO: proper lottery, now I just return the same amount
     def getAmount(t: Transaction) : Int = t match {
@@ -61,6 +69,7 @@ object Main {
       API.sign(account, t.account, "TODO", getAmount(t))
     )
   }
+
   def runOutTransactions(): Unit = {
     /// runs all transactions in inProcessOutTransactions again
     for (t <- inProcessOutTransactions) {
