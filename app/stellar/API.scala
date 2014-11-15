@@ -4,8 +4,14 @@ import play.api.libs.json.{JsArray, Json, JsValue}
 
 import scalaj.http.{HttpOptions, Http}
 
+case class OutTransaction(blob: String, hash: String) {
+  def submit(): Unit = {
+    API.submit(blob)
+  }
+}
+
 object API {
-  val serverUrl = "https://live.stellar.org:9002"
+  val serverUrl = "https://test.stellar.org:9002"
   val connTimeout = 30000
   val readTimeout = 100000
 
@@ -65,4 +71,53 @@ object API {
 
     return allPages()
   }
+
+
+  def sign(account: String, destination: String, secret: String, amount: Int): OutTransaction = {
+    val data: JsValue = Json.obj(
+      "method" -> "sign",
+      "params" ->  Json.arr(
+        Json.obj(
+          "secret" -> secret,
+          "tx_json" ->  Json.obj(
+            "TransactionType" -> "Payment",
+            "Account" -> account,
+            "Destination" -> destination,
+            "Amount" -> amount
+          )
+        )
+      )
+    )
+
+    val request = Http.postData(serverUrl, data.toString())
+      .option(HttpOptions.connTimeout(connTimeout))
+      .option(HttpOptions.readTimeout(readTimeout))
+    if (request.responseCode != 200)
+      throw new Exception(s"Server answered with ${request.responseCode}")
+    val res = Json.parse(request.asString) \ "result"
+    val status = (res \ "status").as[String]
+    require(status == "success", status)
+    val blob = (res \ "tx_blob").as[String]
+    val hash = (res \ "tx_json" \ "hash").as[String]
+    return OutTransaction(blob, hash)
+  }
+
+  def submit(blob: String): Unit = {
+    val data: JsValue = Json.obj(
+      "method" -> "sign",
+      "params" ->  Json.arr(
+        Json.obj(
+          "tx_blob" -> blob
+        )
+      )
+    )
+    val request = Http.postData(serverUrl, data.toString())
+      .option(HttpOptions.connTimeout(connTimeout))
+      .option(HttpOptions.readTimeout(readTimeout))
+    if (request.responseCode != 200)
+      throw new Exception(s"Server answered with ${request.responseCode}")
+    val res = Json.parse(request.asString) \ "result"
+    require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
+  }
 }
+
