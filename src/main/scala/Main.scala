@@ -26,6 +26,8 @@ object Main {
           println(t)
       }
     }
+
+    API.close(5000)
   }
 
   var processedInTransactions = Set[Transaction]()
