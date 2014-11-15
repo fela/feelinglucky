@@ -1,6 +1,8 @@
-name := "echo123"
+organization := "org.lucky7"
 
-version := "1.0"
+name := "feelinglucky"
+
+version := "1.0-SNAPSHOT"
 
 libraryDependencies += "org.scalaj" %% "scalaj-http" % "0.3.16"
 
