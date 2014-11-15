@@ -49,6 +49,8 @@ class Transaction(json: JsValue) {
   // ## validated ##
   val validated = (json \ "validated").as[Boolean]
 
+  def incoming = false
+  def outgoing = false
 
   override def toString: String = {
     s"$transactionType $transactionResult"

@@ -27,18 +27,17 @@ object Main {
     }
   }
 
-
   def mainLoop(): Unit = {
     val txLog = getTransactionList()
-    val (out, in) = splitInOut(txLog)
+    val (in, out) = splitInOut(txLog)
     markCompletedOutTransactions(out)
     val unprocessedOut = findUnprocessedInTransactions(in)
     createOutTransactions(unprocessedOut)
     runOutTransactions()
   }
 
-  def splitInOut(txLog: List[Transaction]): (List[Transaction], List[Transaction]) {
-     ???
+  def splitInOut(txLog: List[Transaction]): (List[Transaction], List[Transaction]) = {
+    ??? 
   }
 
   def getTransactionList(): List[Transaction] = {
