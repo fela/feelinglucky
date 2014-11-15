@@ -104,7 +104,7 @@ object API {
 
   def submit(blob: String): Unit = {
     val data: JsValue = Json.obj(
-      "method" -> "sign",
+      "method" -> "submit",
       "params" ->  Json.arr(
         Json.obj(
           "tx_blob" -> blob
