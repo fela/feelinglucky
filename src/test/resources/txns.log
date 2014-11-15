@@ -1,0 +1,195 @@
+{
+  "result": {
+    "account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+    "ledger_index_max": 505342,
+    "ledger_index_min": 0,
+    "limit": 4,
+    "marker": {
+      "ledger": 503065,
+      "seq": 0
+    },
+    "status": "success",
+    "transactions": [
+      {
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+                  "Balance": "135013308",
+                  "Flags": 131072,
+                  "InflationDest": "ghj4kXtHfQcCaLQwpLJ11q2hq6248R7k9C",
+                  "OwnerCount": 23,
+                  "Sequence": 4259
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "6047FB9C7976F2D0554618F5ABFF423E7136205BAF19E92BE9D295E549442C45",
+                "PreviousFields": {
+                  "Balance": "135013318",
+                  "Sequence": 4258
+                },
+                "PreviousTxnID": "0813EDACCAE93339667114708E8D651B39BE184D9ED884E63DB8F109747227D3",
+                "PreviousTxnLgrSeq": 504390
+              }
+            }
+          ],
+          "TransactionIndex": 0,
+          "TransactionResult": "tecPATH_DRY"
+        },
+        "tx": {
+          "Account": "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb",
+          "Amount": {
+            "currency": "USD",
+            "issuer": "ghj4kXtHfQcCaLQwpLJ11q2hq6248R7k9C",
+            "value": "10"
+          },
+          "Destination": "gHJPw9kW8v4BsUyDnBR8ZHWo8aEkhUMeAq",
+          "Fee": "10",
+          "Flags": 2147483648,
+          "Sequence": 4258,
+          "SigningPubKey": "BE3900393891A2A2244E28A82C43BA94CA94DD6BFE36D523576A22BFF86055D4",
+          "TransactionType": "Payment",
+          "TxnSignature": "516E7C66D7442D17BCAC61E9FBD46E63E8240C0343BA6D917453BFBD8F837CB1110FFC255274BAF5602C7A468AE49C9895FFBA423F802329E307860774DC400C",
+          "date": 469369500,
+          "hash": "5C9ADB369590980BEEB59CAF6CCA564D573EB9D85E24A566107DF44C1F99BF9C",
+          "inLedger": 505184,
+          "ledger_index": 505184
+        },
+        "validated": true
+      },
+      {
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+                  "Balance": "135013318",
+                  "Flags": 131072,
+                  "InflationDest": "ghj4kXtHfQcCaLQwpLJ11q2hq6248R7k9C",
+                  "OwnerCount": 23,
+                  "Sequence": 4258
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "6047FB9C7976F2D0554618F5ABFF423E7136205BAF19E92BE9D295E549442C45",
+                "PreviousFields": {
+                  "Balance": "135013328",
+                  "Sequence": 4257
+                },
+                "PreviousTxnID": "B8F1A88689355F8D1575CA0D9BB169BB8067BFC5AB7E12A85D97ACA81ECFDB0A",
+                "PreviousTxnLgrSeq": 504246
+              }
+            }
+          ],
+          "TransactionIndex": 0,
+          "TransactionResult": "tecUNFUNDED_PAYMENT"
+        },
+        "tx": {
+          "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+          "Amount": "1000000000",
+          "Destination": "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb",
+          "Fee": "10",
+          "Flags": 2147483648,
+          "Sequence": 4257,
+          "SigningPubKey": "BE3900393891A2A2244E28A82C43BA94CA94DD6BFE36D523576A22BFF86055D4",
+          "TransactionType": "Payment",
+          "TxnSignature": "C7857F6CA633260820CAD51703100D1A56BF45B68E133C666086841313B12DC80CA7F5F3195E348FEBFBD1827EE5DF51CB86B3BE867BCE0E1FAA6074FB4A4D04",
+          "date": 469353650,
+          "hash": "0813EDACCAE93339667114708E8D651B39BE184D9ED884E63DB8F109747227D3",
+          "inLedger": 504390,
+          "ledger_index": 504390
+        },
+        "validated": true
+      },
+      {
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+                  "Balance": "135013328",
+                  "Flags": 131072,
+                  "InflationDest": "ghj4kXtHfQcCaLQwpLJ11q2hq6248R7k9C",
+                  "OwnerCount": 23,
+                  "Sequence": 4257
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "6047FB9C7976F2D0554618F5ABFF423E7136205BAF19E92BE9D295E549442C45",
+                "PreviousFields": {
+                  "Balance": "135013338",
+                  "Sequence": 4256
+                },
+                "PreviousTxnID": "02103CA0D24039ED395AD901979B513B125DFA89F58ADB397D631A9BEC8A5B08",
+                "PreviousTxnLgrSeq": 504233
+              }
+            }
+          ],
+          "TransactionIndex": 0,
+          "TransactionResult": "tecUNFUNDED_PAYMENT"
+        },
+        "tx": {
+          "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+          "Amount": "31000000000",
+          "Destination": "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb",
+          "Fee": "10",
+          "Flags": 2147483648,
+          "Sequence": 4256,
+          "SigningPubKey": "BE3900393891A2A2244E28A82C43BA94CA94DD6BFE36D523576A22BFF86055D4",
+          "TransactionType": "Payment",
+          "TxnSignature": "8A803D6534C246F083D9148370C309ED4701686588DA158BDE926E068CFD8B354667FA9FDC547315538653DF33ABEF14EBC46E68AF8EC753EC02A00CB947BC08",
+          "date": 469350790,
+          "hash": "B8F1A88689355F8D1575CA0D9BB169BB8067BFC5AB7E12A85D97ACA81ECFDB0A",
+          "inLedger": 504246,
+          "ledger_index": 504246
+        },
+        "validated": true
+      },
+      {
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+                  "Balance": "135013338",
+                  "Flags": 131072,
+                  "InflationDest": "ghj4kXtHfQcCaLQwpLJ11q2hq6248R7k9C",
+                  "OwnerCount": 23,
+                  "Sequence": 4256
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "6047FB9C7976F2D0554618F5ABFF423E7136205BAF19E92BE9D295E549442C45",
+                "PreviousFields": {
+                  "Balance": "135013348",
+                  "Sequence": 4255
+                },
+                "PreviousTxnID": "51F4FBC20F1D270024621884260253162267D4D1D5405160388AEC2CB1B54107",
+                "PreviousTxnLgrSeq": 503065
+              }
+            }
+          ],
+          "TransactionIndex": 0,
+          "TransactionResult": "tecUNFUNDED_PAYMENT"
+        },
+        "tx": {
+          "Account": "ganVp9o5emfzpwrG5QVUXqMv8AgLcdvySb",
+          "Amount": "31000000000",
+          "Destination": "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb",
+          "Fee": "10",
+          "Flags": 2147483648,
+          "Sequence": 4255,
+          "SigningPubKey": "BE3900393891A2A2244E28A82C43BA94CA94DD6BFE36D523576A22BFF86055D4",
+          "TransactionType": "Payment",
+          "TxnSignature": "41B9F2FD3377D2FF7DA30D2CF7C62F12903C286886BE656DABF49475D781CCD28DA69CC51BC44D1D7A24A3AD4F5B62148D83A42D0D50761C0648D8C2048C5B0A",
+          "date": 469350540,
+          "hash": "02103CA0D24039ED395AD901979B513B125DFA89F58ADB397D631A9BEC8A5B08",
+          "inLedger": 504233,
+          "ledger_index": 504233
+        },
+        "validated": true
+      }
+    ]
+  }
+}

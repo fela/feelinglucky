@@ -57,9 +57,10 @@ class Transaction(json: JsValue) {
   override def toString: String = {
     s"$transactionType $transactionResult"
   }
+
 }
 
-class PaymentTransaction(val json: JsValue) extends Transaction(json) {
+case class PaymentTransaction(val json: JsValue) extends Transaction(json) {
   override def isPayment = true
 
   require(transactionType == "Payment")
