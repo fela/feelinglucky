@@ -11,7 +11,7 @@ case class OutTransaction(blob: String, hash: String) {
 }
 
 object API {
-  val serverUrl = "https://live.stellar.org:9002"
+  val serverUrl = "https://test.stellar.org:9002"
   val connTimeout = 30000
   val readTimeout = 100000
 
@@ -82,6 +82,7 @@ object API {
           "tx_json" ->  Json.obj(
             "TransactionType" -> "Payment",
             "Account" -> account,
+            "Destination" -> destination,
             "Amount" -> amount
           )
         )
@@ -94,7 +95,8 @@ object API {
     if (request.responseCode != 200)
       throw new Exception(s"Server answered with ${request.responseCode}")
     val res = Json.parse(request.asString) \ "result"
-    require((res \ "status").as[String] == "success")
+    val status = (res \ "status").as[String]
+    require(status == "success", status)
     val blob = (res \ "tx_blob").as[String]
     val hash = (res \ "tx_json" \ "hash").as[String]
     return OutTransaction(blob, hash)
@@ -115,7 +117,7 @@ object API {
     if (request.responseCode != 200)
       throw new Exception(s"Server answered with ${request.responseCode}")
     val res = Json.parse(request.asString) \ "result"
-    require((res \ "status").as[String] == "success")
+    require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
   }
 }
 
