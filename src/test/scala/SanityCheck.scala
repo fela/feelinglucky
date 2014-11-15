@@ -2,9 +2,9 @@ import org.scalatest._
 import play.api.libs.json.{JsArray, JsValue, Json}
 import stellar.{OutTransaction, Transaction}
 
-import Main._
+/*import Main._
 
-/*class SanityCheck extends FlatSpec with Matchers {
+class SanityCheck extends FlatSpec with Matchers {
 
   private val txnlog: String = io.Source.fromInputStream(getClass.getResourceAsStream("/txns.log")).getLines().mkString("")
 

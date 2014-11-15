@@ -66,7 +66,7 @@ object API {
       // actual api request
       post(data, body => {
         val res = Json.parse(body) \ "result"
-        require((res \ "status").as[String] == "success")
+        require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
 
         val transactions = Transaction.parseList((res \ "transactions").as[JsArray])
         //println(Json.prettyPrint(res))
@@ -104,7 +104,7 @@ object API {
             "Account" -> account,
             "Destination" -> destination,
             "Amount" -> amount.toString,
-            "DestinationTag" -> Random.nextInt.toString
+            "DestinationTag" -> Random.nextInt(100000000).toString
           )
         )
       )
@@ -113,7 +113,7 @@ object API {
     post(data, body => {
       val res = Json.parse(body) \ "result"
       val status = (res \ "status").as[String]
-      require(status == "success", status)
+      require(status == "success", (res \ "error_message").as[String])
       val blob = (res \ "tx_blob").as[String]
       val hash = (res \ "tx_json" \ "hash").as[String]
       OutTransaction(blob, hash)
