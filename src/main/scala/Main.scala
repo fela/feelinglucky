@@ -28,10 +28,10 @@ object Main {
     }
   }
 
-  var processedInTransactions = collection.mutable.Set[Transaction]()
-  var processedOutTransactions = collection.mutable.Set[Transaction]()
+  var processedInTransactions = Set[Transaction]()
+  var processedOutTransactions = Set[Transaction]()
 
-  var inProcessOutTransactions = collection.mutable.Set[OutTransaction]()
+  var inProcessOutTransactions = Set[OutTransaction]()
 
   case class IncomingTxLog(txs: Set[Transaction])
   case class OutgoingTxLog(txs: Set[Transaction])
@@ -57,13 +57,13 @@ object Main {
 
   def markCompletedOutTransactions(transactions: OutgoingTxLog): Unit = {
     // move transactions from inProcessOutTransactions to processedOutTransactions
-    val filter: collection.mutable.Set[OutTransaction] = inProcessOutTransactions.filter(ot => transactions.txs.find(_.hash == ot.hash).isDefined)
-    inProcessOutTransactions.retain(!filter.contains(_))
-    processedOutTransactions ++= transactions.txs.filter(x => filter.find(_.hash == x.hash).isDefined)
+    val (newInProcessOutTransactions, newProcessedOutTransactions): (Set[OutTransaction], Set[Transaction]) = immutableMarkCompletedOutTransactions(transactions, inProcessOutTransactions, processedOutTransactions)
+    inProcessOutTransactions = newInProcessOutTransactions
+    processedOutTransactions = newProcessedOutTransactions
   }
 
 
-  def markCompletedOutTransactions2(transactions: OutgoingTxLog, inProcessOutTransactions: Set[OutTransaction], processedOutTransactions: Set[Transaction]):  (Set[OutTransaction], Set[Transaction])= {
+  def immutableMarkCompletedOutTransactions(transactions: OutgoingTxLog, inProcessOutTransactions: Set[OutTransaction], processedOutTransactions: Set[Transaction]):  (Set[OutTransaction], Set[Transaction])= {
     // move transactions from inProcessOutTransactions to processedOutTransactions
     val (tmpinprocess, tmpouttra) = (collection.mutable.Set[OutTransaction](inProcessOutTransactions.toArray : _*), collection.mutable.Set[Transaction](processedOutTransactions.toArray : _*))
     val filter: collection.mutable.Set[OutTransaction] = tmpinprocess.filter(ot => transactions.txs.find(_.hash == ot.hash).isDefined)
