@@ -19,6 +19,8 @@ object Transaction {
 
 
 class Transaction(json: JsValue) {
+  def isPayment = false
+
   val rawJson = json
 
   // ## meta ##
@@ -58,6 +60,8 @@ class Transaction(json: JsValue) {
 }
 
 class PaymentTransaction(val json: JsValue) extends Transaction(json) {
+  override def isPayment = true
+
   require(transactionType == "Payment")
 
   val destination = (json \ "tx" \ "Destination").as[String]
