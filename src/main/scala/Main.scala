@@ -68,7 +68,8 @@ object Main {
       case _ => throw new Exception("Can only get amount of payment")
     }
     inProcessOutTransactions ++= transactions.map(t =>
-      API.sign(account, t.account, "TODO", getAmount(t))
+      API.sign(account, t.account, secret1
+        , getAmount(t))
     )
   }
 

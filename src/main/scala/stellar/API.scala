@@ -73,7 +73,7 @@ object API {
   }
 
 
-  def sign(account: String, destination: String, secret: String, amount: Int): OutTransaction = {
+  def sign(account: String, destination: String, secret: String, amount: BigInt): OutTransaction = {
     val data: JsValue = Json.obj(
       "method" -> "sign",
       "params" ->  Json.arr(
@@ -83,11 +83,14 @@ object API {
             "TransactionType" -> "Payment",
             "Account" -> account,
             "Destination" -> destination,
-            "Amount" -> amount
+            "Amount" -> amount.toString
           )
         )
       )
     )
+
+    println(Json.prettyPrint(data))
+
 
     val request = Http.postData(serverUrl, data.toString())
       .option(HttpOptions.connTimeout(connTimeout))
@@ -98,25 +101,28 @@ object API {
     val status = (res \ "status").as[String]
     require(status == "success", status)
     val blob = (res \ "tx_blob").as[String]
-    val hash = (res \ "tx_json" \ "hash").as[String]
+    val json = (res \ "tx_json")
+    val hash = (json \ "hash").as[String]
     return OutTransaction(blob, hash)
   }
 
   def submit(blob: String): Unit = {
     val data: JsValue = Json.obj(
-      "method" -> "sign",
+      "method" -> "submit",
       "params" ->  Json.arr(
         Json.obj(
           "tx_blob" -> blob
         )
       )
     )
+    println(Json.prettyPrint(data))
     val request = Http.postData(serverUrl, data.toString())
       .option(HttpOptions.connTimeout(connTimeout))
       .option(HttpOptions.readTimeout(readTimeout))
     if (request.responseCode != 200)
       throw new Exception(s"Server answered with ${request.responseCode}")
     val res = Json.parse(request.asString) \ "result"
+    println(Json.prettyPrint(res))
     require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
   }
 }
