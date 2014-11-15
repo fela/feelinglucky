@@ -41,7 +41,7 @@ object Main {
     val txLog = getTransactionList()
     val (out, in) = splitOutIn(txLog)
     markCompletedOutTransactions(out)
-    val unprocessedOut = findUnprocessedInTransactions(in)
+    val unprocessedOut = findUnprocessedInTransactions(in, processedInTransactions)
     createOutTransactions(unprocessedOut)
     runOutTransactions()
   }
@@ -51,7 +51,7 @@ object Main {
   }
 
   def splitOutIn(txLog: Set[Transaction]): (OutgoingTxLog, IncomingTxLog) = {
-    val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == account)
+    val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == account) //assumption: all others are incoming i.e. destination is our account
     (OutgoingTxLog(outgoing), IncomingTxLog(incoming))
   }
 
@@ -72,12 +72,13 @@ object Main {
     (tmpinprocess.toSet, tmpouttra.toSet)
   }
 
-  def findUnprocessedInTransactions(transactions: IncomingTxLog): List[Transaction] = {
+  def findUnprocessedInTransactions(transactions: IncomingTxLog, processedInTransactions: Set[Transaction]): Set[Transaction] = {
     // finds transactions not in processedInTransactions
-    ???
+    val diff: Set[Transaction] = transactions.txs.diff(processedInTransactions)
+    diff
   }
 
-  def createOutTransactions(transactions: List[Transaction]): Unit = {
+  def createOutTransactions(transactions: Set[Transaction]): Unit = {
     // TODO: proper lottery, now I just return the same amount
     def getAmount(t: Transaction) : Int = t match {
       case p: PaymentTransaction => p.amount.toInt

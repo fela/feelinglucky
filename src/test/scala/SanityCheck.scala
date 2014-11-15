@@ -13,6 +13,8 @@ class SanityCheck extends FlatSpec with Matchers {
 
   "A SanityCheck" should "given an empty inProcessOutTransactions doesn't add any to the processedoutTransactions" in {
     val (out, in): (OutgoingTxLog, IncomingTxLog) = Main.splitOutIn(txns.toSet)
+
+
     val (newOutTransactions, processedTransactions): (Set[OutTransaction], Set[Transaction]) = immutableMarkCompletedOutTransactions(out, Set(), Set())
 
     processedTransactions.size should be(0)
@@ -32,6 +34,24 @@ class SanityCheck extends FlatSpec with Matchers {
     val (newOutTransactions, processedTransactions): (Set[OutTransaction], Set[Transaction]) = immutableMarkCompletedOutTransactions(out, Set(OutTransaction("", "5C9ADB369590980kjsdksdjksdjks")), Set())
     out.txs.size should be(1)
     processedTransactions.size should be(0)
+  }
+
+  it should "given empty processedInTransactions findUnprocessedInTransactions should return all incoming tansactions" in {
+    val set = txns.toSet
+    val (out, in): (OutgoingTxLog, IncomingTxLog) = Main.splitOutIn(txns.toSet)
+    val unprocessedInTransactions = findUnprocessedInTransactions(in, Set())
+
+    in.txs.size should be(3)
+    unprocessedInTransactions.size should be(3)
+  }
+
+  it should "given non empty processedInTransactions findUnprocessedInTransactions should return all incoming tansactions that aren't in the processedInTransactions" in {
+    val set = txns.toSet
+    val (out, in): (OutgoingTxLog, IncomingTxLog) = Main.splitOutIn(txns.toSet)
+    val unprocessedInTransactions = findUnprocessedInTransactions(in, Set(in.txs.head))
+
+    in.txs.size should be(3)
+    unprocessedInTransactions.size should be(2)
   }
 
 }
