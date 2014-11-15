@@ -78,7 +78,7 @@ object API {
     // gets all pages after the marker
     def allPages(marker: Option[JsValue]=None) : List[Transaction] = {
         val (newList, newMarker) = getPage(marker)
-        println(newMarker)
+        //println(newMarker)
         newMarker match {
           case Some(m) =>
             if (! newList.isEmpty)
@@ -114,6 +114,7 @@ object API {
       val res = Json.parse(body) \ "result"
       val status = (res \ "status").as[String]
       require(status == "success", (res \ "error_message").as[String])
+      //println(Json.prettyPrint(res))
       val blob = (res \ "tx_blob").as[String]
       val hash = (res \ "tx_json" \ "hash").as[String]
       OutTransaction(blob, hash)
@@ -133,19 +134,29 @@ object API {
     )
     post(data, body => {
       val res = Json.parse(body) \ "result"
+
       require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
+      println(Json.prettyPrint(res))
     })
 
   }
 
   def post[T](data: JsValue, f: (String) => T, status: Int = 200): T = {
-    (POST > serverUrl >>> data.toString).~>((x: ExecutedRequest) => x.fold(
+    /*(POST > serverUrl >>> data.toString).~>((x: ExecutedRequest) => x.fold(
       t => throw t._1,
       {
         case (`status`, _, Some(body), _) => f(body)
         case e => throw new RuntimeException(e.toString)
 
-      }), readTimeout)
+      }), readTimeout)*/
+      val request = Http.postData(serverUrl, data.toString())
+              .option(HttpOptions.connTimeout(connTimeout))
+              .option(HttpOptions.readTimeout(readTimeout))
+
+      if (request.responseCode != 200)
+          throw new Exception(s"Server answered with ${request.responseCode}")
+
+      f(request.asString)
   }
 
 }

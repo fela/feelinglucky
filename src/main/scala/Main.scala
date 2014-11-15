@@ -18,6 +18,7 @@ object Main {
   val index = 506133
 
   def main(args: Array[String]) = {
+    init()
     while (true) {
       mainLoop()
     }
@@ -28,9 +29,6 @@ object Main {
   // IN transactions that we don't need to handle anymore
   var processedInTransactions = Set[String]()
 
-  // OUT transactions that we don't need to resubmit (hashes)
-  //var processedOutTransactions = Set[String]()
-
   // OUT transaction that we DO need to resubmit
   var inProcessOutTransactions = Set[OutTransaction]()
 
@@ -38,14 +36,23 @@ object Main {
   case class OutgoingTxLog(txs: Set[Transaction])
 
 
+  def init(): Unit = {
+    // set all IN transactions as processed
+    val txLog = getTransactionList()
+    val (_, in) = splitOutIn(txLog)
+    processedInTransactions = in.txs.map(_.hash)
+  }
+
+
   def mainLoop(): Unit = {
-    println("\n\nmainLoop()")
     val txLog = getTransactionList()
     val (out, in) = splitOutIn(txLog)
     markCompletedOutTransactions(out)
     runOutTransactions()
     val unprocessedOut = findUnprocessedInTransactions(in)
     createOutTransactions(unprocessedOut)
+    println("\n\nwaiting 10 seconds")
+    Thread sleep 10000
   }
 
   def getTransactionList(): Set[Transaction] = {
