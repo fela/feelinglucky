@@ -1,5 +1,8 @@
 import stellar.{OutTransaction, Transaction, PaymentTransaction, API}
 
+import scala.collection
+import scala.collection.parallel.mutable
+
 object Main {
   val account100 = "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb"
   val accountFela = "gHbvXso6jQEz9WLYvvQXqmzMa2knynrU41"
@@ -25,12 +28,13 @@ object Main {
     }
   }
 
-  var inProcessOutTransactions = Set[OutTransaction]()
-  var processedOutTransactions = Set[String]()
-  var processedInTransactions = Set[String]()
+  var processedInTransactions = collection.mutable.Set[Transaction]()
+  var processedOutTransactions = collection.mutable.Set[Transaction]()
 
-  case class IncomingTxLog(txs: List[Transaction])
-  case class OutgoingTxLog(txs: List[Transaction])
+  var inProcessOutTransactions = collection.mutable.Set[OutTransaction]()
+
+  case class IncomingTxLog(txs: Set[Transaction])
+  case class OutgoingTxLog(txs: Set[Transaction])
 
 
   def mainLoop(): Unit = {
@@ -42,18 +46,30 @@ object Main {
     runOutTransactions()
   }
 
-  def getTransactionList(): List[Transaction] = {
-    API.account_tx(account)
+  def getTransactionList(): Set[Transaction] = {
+    API.account_tx(account).toSet
   }
 
-  def splitOutIn(txLog: List[Transaction]): (OutgoingTxLog, IncomingTxLog) = {
+  def splitOutIn(txLog: Set[Transaction]): (OutgoingTxLog, IncomingTxLog) = {
     val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == account)
     (OutgoingTxLog(outgoing), IncomingTxLog(incoming))
   }
 
   def markCompletedOutTransactions(transactions: OutgoingTxLog): Unit = {
     // move transactions from inProcessOutTransactions to processedOutTransactions
-    ???
+    val filter: collection.mutable.Set[OutTransaction] = inProcessOutTransactions.filter(ot => transactions.txs.find(_.hash == ot.hash).isDefined)
+    inProcessOutTransactions.retain(!filter.contains(_))
+    processedOutTransactions ++= transactions.txs.filter(x => filter.find(_.hash == x.hash).isDefined)
+  }
+
+
+  def markCompletedOutTransactions2(transactions: OutgoingTxLog, inProcessOutTransactions: Set[OutTransaction], processedOutTransactions: Set[Transaction]):  (Set[OutTransaction], Set[Transaction])= {
+    // move transactions from inProcessOutTransactions to processedOutTransactions
+    val (tmpinprocess, tmpouttra) = (collection.mutable.Set[OutTransaction](inProcessOutTransactions.toArray : _*), collection.mutable.Set[Transaction](processedOutTransactions.toArray : _*))
+    val filter: collection.mutable.Set[OutTransaction] = tmpinprocess.filter(ot => transactions.txs.find(_.hash == ot.hash).isDefined)
+    tmpinprocess.retain(!filter.contains(_))
+    tmpouttra ++= transactions.txs.filter(x => filter.find(_.hash == x.hash).isDefined)
+    (tmpinprocess.toSet, tmpouttra.toSet)
   }
 
   def findUnprocessedInTransactions(transactions: IncomingTxLog): List[Transaction] = {

@@ -8,6 +8,6 @@ object Playground {
     val secret1 = io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString
     val secret2 = io.Source.fromURL(getClass.getResource("/secret2")).getLines.mkString
     val out = API.sign(address1, address2, secret1, 1234)
-    out.submit(secret1)
+    //out.submit(secret1)
   }
 }
