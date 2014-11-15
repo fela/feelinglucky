@@ -6,6 +6,11 @@ import stellar.{OutTransaction, Transaction, PaymentTransaction, API}
 object Main {
   val account100 = "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb"
   val accountFela = "gHbvXso6jQEz9WLYvvQXqmzMa2knynrU41"
+  val address1 = ""
+  val address2 = ""
+  val secret1 = io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString
+  println(secret1)
+  //val secret2 = readFileContent("secret2")
   val account = account100
   def main(args: Array[String]) = {
     val transactions = API.account_tx(account)
