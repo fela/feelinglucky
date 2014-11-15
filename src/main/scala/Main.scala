@@ -1,3 +1,5 @@
+package org.lucky7.feelinglucky
+
 import stellar.{OutTransaction, Transaction, PaymentTransaction, API}
 
 import scala.collection
