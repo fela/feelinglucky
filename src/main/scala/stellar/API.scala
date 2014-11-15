@@ -73,7 +73,7 @@ object API {
   }
 
 
-  def sign(account: String, destination: String, secret: String, amount: Int): OutTransaction = {
+  def sign(account: String, destination: String, secret: String, amount: BigInt): OutTransaction = {
     val data: JsValue = Json.obj(
       "method" -> "sign",
       "params" ->  Json.arr(
@@ -83,7 +83,7 @@ object API {
             "TransactionType" -> "Payment",
             "Account" -> account,
             "Destination" -> destination,
-            "Amount" -> amount
+            "Amount" -> amount.toString
           )
         )
       )
