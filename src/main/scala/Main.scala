@@ -11,7 +11,7 @@ object Main {
   val secret1 = io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString
   println(secret1)
   //val secret2 = readFileContent("secret2")
-  val account = account100
+  val account = "gsMxVfhj1GmHspP5iARzMxZBZmPya9NALr"
   def main(args: Array[String]) = {
     val transactions = API.account_tx(account)
     println(transactions.length)
