@@ -29,11 +29,16 @@ object Main {
 
 
   def mainLoop(): Unit = {
-    val transactions = getTransactionList()
-    markCompletedOutTransactions(transactions)
-    val unprocessed = findUnprocessedInTransactions(transactions)
-    createOutTransactions(unprocessed)
+    val txLog = getTransactionList()
+    val (out, in) = splitInOut(txLog)
+    markCompletedOutTransactions(out)
+    val unprocessedOut = findUnprocessedInTransactions(in)
+    createOutTransactions(unprocessedOut)
     runOutTransactions()
+  }
+
+  def splitInOut(txLog: List[Transaction]): (List[Transaction], List[Transaction]) {
+     ???
   }
 
   def getTransactionList(): List[Transaction] = {
