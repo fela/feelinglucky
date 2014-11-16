@@ -15,7 +15,7 @@ object Main {
   //val secret2 = readFileContent("secret2")
   val account = "gsMxVfhj1GmHspP5iARzMxZBZmPya9NALr"
   // starting ledger index
-  val index = 506133
+  val index = 509049
 
   def main(args: Array[String]) = {
     init()
