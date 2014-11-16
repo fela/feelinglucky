@@ -1,7 +1,5 @@
 package stellar
 
-import java.math.BigInteger
-
 import scala.util.Random
 
 object Lottery {

@@ -95,7 +95,6 @@ object Main {
   }
 
   def createOutTransactions(transactions: Set[Transaction]): Unit = {
-    // TODO: proper lottery, now I just return the same amount
     def getAmount(t: Transaction) : BigInt = t match {
       case p: PaymentTransaction => Lottery.play(BigInt(p.amount))
       case _ => throw new Exception("Can only get amount of payment")
