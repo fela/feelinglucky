@@ -58,10 +58,12 @@ object Main {
   def getTransactionList(): Set[Transaction] = {
     val res = API.account_tx(account, ledgerIndexMin=index).toSet
     println(s"got ${res.size} transactions from the log")
+/*
     for (t <- res) {
       print(s"${t.hash}: ")
       printTransaction(t)
     }
+*/
     res
   }
 
@@ -87,10 +89,12 @@ object Main {
     // finds transactions not in processedInTransactions
     val res: Set[Transaction] = transactions.txs.filter(t => !processedInTransactions(t.hash))
     println("## Unprocessed: ##")
+/*
     for (t <- res) {
       print(s"${t.hash}: ")
       printTransaction(t)
     }
+*/
     res
   }
 
