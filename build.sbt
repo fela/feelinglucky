@@ -16,6 +16,8 @@ libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
 
 libraryDependencies += "org.purang.net" %% "asynch" %"0.4.5" withSources()
 
+libraryDependencies += "io.argonaut" %% "argonaut" % "6.1-M4"
+
 resolvers += "ppurang bintray" at " http://dl.bintray.com/ppurang/maven"
 
 fork in run := true
