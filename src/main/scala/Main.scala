@@ -69,7 +69,8 @@ object Main {
     val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == account) //assumption: all others are incoming i.e. destination is our account
     println(s"got ${incoming.size} incoming transactions log")
     println(s"got ${outgoing.size} outgoing transactions log")
-    (OutgoingTxLog(outgoing), IncomingTxLog(incoming))
+
+    (OutgoingTxLog(outgoing), IncomingTxLog(incoming.filter(_.validated)))
   }
 
   def markCompletedOutTransactions(transactions: OutgoingTxLog): Unit = {
