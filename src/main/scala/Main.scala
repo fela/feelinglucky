@@ -70,7 +70,7 @@ object Main {
     println(s"got ${incoming.size} incoming transactions log")
     println(s"got ${outgoing.size} outgoing transactions log")
 
-    (OutgoingTxLog(outgoing), IncomingTxLog(incoming.filter(_.validated)))
+    (OutgoingTxLog(outgoing), IncomingTxLog(incoming.filter(_.transactionResult == "tesSUCCESS")))
   }
 
   def markCompletedOutTransactions(transactions: OutgoingTxLog): Unit = {
