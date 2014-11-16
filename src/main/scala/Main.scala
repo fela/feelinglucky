@@ -1,6 +1,6 @@
 package org.lucky7.feelinglucky
 
-import stellar.{OutTransaction, Transaction, PaymentTransaction, API}
+import stellar._
 
 import scala.collection
 import scala.collection.parallel.mutable
@@ -96,8 +96,8 @@ object Main {
 
   def createOutTransactions(transactions: Set[Transaction]): Unit = {
     // TODO: proper lottery, now I just return the same amount
-    def getAmount(t: Transaction) : Int = t match {
-      case p: PaymentTransaction => p.amount.toInt / 10
+    def getAmount(t: Transaction) : BigInt = t match {
+      case p: PaymentTransaction => Lottery.play(BigInt(p.amount))
       case _ => throw new Exception("Can only get amount of payment")
     }
 
