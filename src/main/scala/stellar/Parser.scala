@@ -85,3 +85,6 @@ case class PaymentTransaction(val json: JsValue) extends Transaction(json) {
     str
   }
 }
+
+case class IncomingPayment(tx: Transaction)
+case class OutgoingPayment(tx: Transaction)

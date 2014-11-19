@@ -1,12 +1,15 @@
 package stellar
 
-import org.purang.net.http._
 import org.purang.net.http.ning._
 import play.api.libs.json.{JsArray, Json, JsValue}
 
 import scala.util.Random
 import scala.concurrent._
 import scalaj.http.{HttpOptions, Http}
+
+case class Account(id: String)
+case class Secret(str: String)
+case class LedgerIndex(index: Int)
 
 case class OutTransaction(blob: String, hash: String) {
   def submit(): Unit = {
@@ -180,5 +183,13 @@ object API {
       f(request.asString)
   }
 
+}
+
+case class TransactionLog(account: Account, startingIndex:LedgerIndex = LedgerIndex(0)) {
+  private val transactionLog = API.account_tx(account.id, ledgerIndexMin=startingIndex.index).toSet
+
+  private def payments = transactionLog.collect {case y:PaymentTransaction => y}
+  def incomingPayments = payments.filter(_.destination == account.id).map(IncomingPayment)
+  def outgoingPayments = payments.filter(_.account == account.id).map(OutgoingPayment)
 }
 
