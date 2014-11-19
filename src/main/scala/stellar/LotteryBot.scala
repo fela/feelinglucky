@@ -1,8 +1,14 @@
 package stellar
 
+object LotteryBot {
+  var accountsRunning = Set[Account]()
+}
+
 case class LotteryBot(account: Account, secret: Secret, startingIndex: LedgerIndex = LedgerIndex(0)) {
   def run(args: Array[String]) = {
-    init()
+    // TODO we currently have no way to stop the bot
+    require(!LotteryBot.accountsRunning.contains(account))
+    LotteryBot.accountsRunning += account
     while (true) {
       mainLoop()
     }
@@ -62,15 +68,18 @@ case class LotteryBot(account: Account, secret: Secret, startingIndex: LedgerInd
   }
 
   def createOutTransactions(transactions: Set[IncomingPayment]): Unit = {
-    def getAmount(t: IncomingPayment) : BigInt = t.tx match {
-      case p: PaymentTransaction => Lottery.play(BigInt(p.amount))
-      case _ => throw new Exception("Can only get amount of payment")
+    def outTransactionFor(inTransaction: IncomingPayment): OutTransaction = {
+      val amount = inTransaction.tx match {
+        case p: PaymentTransaction => Lottery.play (BigInt (p.amount) )
+        case _ => throw new Exception ("Can only get amount of payment")
+      }
+      API.sign(account.id, inTransaction.tx.account, secret.str, amount)
     }
 
     println(s"inProcessOutTransactions before: ${inProcessOutTransactions.size}")
     println(s"processedInTransactions before: ${processedInTransactions.size}")
     for (t <- transactions) {
-      val out = API.sign(account.id, t.tx.account, secret.str, getAmount(t))
+      val out = outTransactionFor(t)
       println(s"=====\nbefore ${inProcessOutTransactions.size}")
       inProcessOutTransactions += out
       println(s"after ${inProcessOutTransactions.size}")
