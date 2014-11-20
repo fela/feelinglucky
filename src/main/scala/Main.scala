@@ -9,21 +9,31 @@ object Main {
   val account100 = "gwy1o8ZBuNxxz66ge6Ru4x1CzBc7RbMTWb"
   val accountFela = "gHbvXso6jQEz9WLYvvQXqmzMa2knynrU41"
   val address1 = "ghWhBkFnzWRwZxY5EMbyrswJdNk1rvfCJj"
-  val address2 = ""
-  val secret1 = io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString
-  println(secret1)
-  //val secret2 = readFileContent("secret2")
-  val account = "gsMxVfhj1GmHspP5iARzMxZBZmPya9NALr"
   // starting ledger index
   val index = 509049
 
   def main(args: Array[String]) = {
-    init()
-    while (true) {
-      mainLoop()
-    }
+    //start(LotteryCredentials("gsMxVfhj1GmHspP5iARzMxZBZmPya9NALr", io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString))
+    start(LotteryCredentials("g48BvpjobAFYVZurnbSFM3C5SGyTsjzTzt", "s3VPPYmPTTVe6Rb3GkZ6pSFqyuqkF2vMTAribpWzStb8BPMVLmv"))
+  }
 
-    API.close(5000)
+  @volatile private var stopped = false
+  //todo we want to restart the lottery which isn't possible right now!
+  //passing lottery all over the place isn't ideal!!!
+
+  def stop(): Unit = {
+    println(s"!!!!!!! STOP Lottery")
+    this.stopped = true
+  }
+
+  def start(lottery: LotteryCredentials) = {
+    println(s"!!!!!!! STARTING Lottery $lottery")
+    init(lottery)
+    while (!stopped) {
+      mainLoop(lottery)
+    }
+    println(s"!!!!!!! STOPPED Lottery $lottery")
+    //API.close(5000)
   }
 
   // IN transactions that we don't need to handle anymore
@@ -36,26 +46,27 @@ object Main {
   case class OutgoingTxLog(txs: Set[Transaction])
 
 
-  def init(): Unit = {
+  def init(lottery: LotteryCredentials): Unit = {
     // set all IN transactions as processed
-    val txLog = getTransactionList()
-    val (_, in) = splitOutIn(txLog)
+    val txLog = getTransactionList(lottery.id)
+    val (_, in) = splitOutIn(lottery.id, txLog)
     processedInTransactions = in.txs.map(_.hash)
   }
 
 
-  def mainLoop(): Unit = {
-    val txLog = getTransactionList()
-    val (out, in) = splitOutIn(txLog)
+  def mainLoop(lottery: LotteryCredentials): Unit = {
+    val account: String = lottery.id
+    val txLog = getTransactionList(account)
+    val (out, in) = splitOutIn(account, txLog)
     markCompletedOutTransactions(out)
     runOutTransactions()
     val unprocessedOut = findUnprocessedInTransactions(in)
-    createOutTransactions(unprocessedOut)
+    createOutTransactions(lottery, unprocessedOut)
     println("\n\nwaiting 10 seconds")
     Thread sleep 10000
   }
 
-  def getTransactionList(): Set[Transaction] = {
+  def getTransactionList(account: String): Set[Transaction] = {
     val res = API.account_tx(account, ledgerIndexMin=index).toSet
     println(s"got ${res.size} transactions from the log")
 /*
@@ -67,7 +78,7 @@ object Main {
     res
   }
 
-  def splitOutIn(txLog: Set[Transaction]): (OutgoingTxLog, IncomingTxLog) = {
+  def splitOutIn(account: String, txLog: Set[Transaction]): (OutgoingTxLog, IncomingTxLog) = {
     val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == account) //assumption: all others are incoming i.e. destination is our account
     println(s"got ${incoming.size} incoming transactions log")
     println(s"got ${outgoing.size} outgoing transactions log")
@@ -99,16 +110,13 @@ object Main {
     res
   }
 
-  def createOutTransactions(transactions: Set[Transaction]): Unit = {
-    def getAmount(t: Transaction) : BigInt = t match {
-      case p: PaymentTransaction => Lottery.play(BigInt(p.amount))
-      case _ => throw new Exception("Can only get amount of payment")
-    }
+  def createOutTransactions(lottery: LotteryCredentials, transactions: Set[Transaction]): Unit = {
+    def getAmount(t: Transaction) : BigInt = Lottery.play(BigInt(t.amount))
 
     println(s"inProcessOutTransactions before: ${inProcessOutTransactions.size}")
     println(s"processedInTransactions before: ${processedInTransactions.size}")
     for (t <- transactions) {
-      val out = API.sign(account, t.account, secret1, getAmount(t))
+      val out = API.sign(lottery.id, t.account, lottery.hash, getAmount(t), t.tag.getOrElse(-1))
       println(s"=====\nbefore ${inProcessOutTransactions.size}")
       inProcessOutTransactions += out
       println(s"after ${inProcessOutTransactions.size}")
@@ -127,15 +135,13 @@ object Main {
     }
   }
 
-  private def printTransaction(t: Transaction): Unit = {
-    t match {
-      case payment : PaymentTransaction =>
-        if (payment.account == account)
+  private def printTransaction(account: String, t: Transaction): Unit = {
+        if (t.account == account)
           println(s"$t ->")
-        if (payment.destination == account)
+        else if (t.destination == account)
           println(s"$t <-")
-      case _ =>
+        else
         println(t)
-    }
+
   }
 }

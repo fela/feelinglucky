@@ -2,16 +2,25 @@ package org.lucky7.feelinglucky
 
 import org.purang.net.http._
 import org.purang.net.http.ning._
-import play.api.libs.json.JsValue
+import play.api.libs.json.{Json, JsValue}
+import stellar.{Transaction, API}
+import scala.collection.immutable.IndexedSeq
+import scala.collection.mutable.ArrayBuffer
 import scalaz._, Scalaz._
 import argonaut._, Argonaut._
 
+case class LotteryCredentials(id: String, hash: String)
+
 object Accounts {
+  /*implicit class RBoolean(val bool: Boolean) extends AnyVal {
+    def fold[A](t: =>A,f: =>A) = if (bool) t else f
+  }*/
+
   implicit val sse = java.util.concurrent.Executors.newScheduledThreadPool(5)
 
   case class Account(result: AR)
   case class AR(accountId: String, masterSeed: String, masterSeedHex: String, publicKey: String, publicKeyHex: String, status: String)
-  
+
   case class Balance(result: BR)
   case class BR(ad: AccountData, status: String )
   case class AccountData(balance: Long)
@@ -48,6 +57,57 @@ object Accounts {
     nonblockingexecutor.client.close()
   }
 
+  //the following is for lottery as lottery has to take stuff from everyone
+  def getTransactions(myAccountId: String): List[Transaction] = API.account_tx(myAccountId, 0, 10000).filter(_.isPayment)
+
+  //the following is for player as player is only interested in the stuff involving the lottery
+  def getTransactionsForPlayer(myAccountId: String, targetSystemId: String): List[Transaction] =
+    getTransactions(myAccountId).filter(x => x.destination == targetSystemId || x.account == targetSystemId)
+
+  case class IncomingTxLog(txs: List[Transaction])
+  case class OutgoingTxLog(txs: List[Transaction])
+  
+
+  //splits the account tx log into date-sorted outgoing and incoming transactions that are valid
+  def split(myaccount: String, txLog: List[Transaction], filter: Transaction => Boolean = _.valid ): (OutgoingTxLog, IncomingTxLog) = {
+    val (outgoing, incoming) = txLog.filter(_.isPayment).partition(_.account == myaccount)
+    (OutgoingTxLog(outgoing.filter(filter).sortWith(_.date >_.date)), IncomingTxLog(incoming.filter(filter).sortWith(_.date >_.date)))
+  }
+
+  //finds the related pairs of transactions where there might be some kind of two way transfer, all others are returned as such
+  //(List((out,in)), List(out)) //for players
+  //assumes: logs only has lottery related stuff. See getTransactionsForPlayer
+  def pairOut(out: OutgoingTxLog,in: IncomingTxLog): (List[(Transaction, Transaction)], List[Transaction]) = {
+    //don't even think about runtime-complexity here ;)
+    var buff : ArrayBuffer[(Transaction, Transaction)] = ArrayBuffer()
+    var left : ArrayBuffer[Transaction] = ArrayBuffer()
+    out.txs.foreach(
+      o => in.txs.find(i => i.tag == o.tag).fold({left += o; ()})(i => buff += Tuple2(o, i)) //pair if tags are equal
+    )
+   /* println(
+      s"""
+        |pairs: ${buff.toList.mkString(",")}
+        |
+        |others: ${left.toList.mkString(",")}
+        |
+        |out: ${out.txs.mkString(",")}
+        |
+        |in: ${in.txs.mkString(",")}
+      """.stripMargin)*/
+    (buff.toList, left.toList)
+  }
+
+  //(List((out,in)), List(in)) // for lottery
+  def pairIn(out: OutgoingTxLog,in: IncomingTxLog): (List[(Transaction, Transaction)], List[Transaction]) = {
+    //don't even think about runtime-complexity here ;)
+    var buff : ArrayBuffer[(Transaction, Transaction)] = ArrayBuffer()
+    var left : ArrayBuffer[Transaction] = ArrayBuffer()
+    in.txs.foreach(
+      i => out.txs.find(o => (o.destination+o.tag) == (i.account +i.tag)).fold({left += i; ()})(o => buff += Tuple2(o, i)) //pair if tag and
+    )
+    (buff.toList, left.toList)
+  }
+
   def create: \/[String, Account] = {
     val account: \/[String, Account] = post(stellar, createAccount, {
       x => {
@@ -61,15 +121,73 @@ object Accounts {
   
   def balance(id: String): \/[String, Balance] = post(stellar, accountCheck(id), {
     x => {
-      println(x)
       Parse.decodeEither[Balance](x)
     }
   }, 200)
 
+  def paymentData(sender: String,
+                  secret: String,
+                  receiver: String,
+                  amount: String,
+                  dt: Int): String = {
+    val data: JsValue = Json.obj(
+      "method" -> "submit",
+      "params" ->  Json.arr(
+        Json.obj(
+          "secret" -> secret,
+          "tx_json" -> Json.obj(
+            "TransactionType" -> "Payment",
+            "Account" -> sender,
+            "Destination" -> receiver,
+            "DestinationTag" -> dt,
+            "Amount" -> amount
+          )
+        )
+      )
+    )
+    data.toString
+  }
+
+  def makePayment(sender: String, secret: String,  receiver: String,  amount: String,
+                  dt: Int): \/[String, String] = {
+    post(stellar, paymentData(sender, secret, receiver, amount, dt), {
+      body => {
+        //println(body)
+        val res = Json.parse(body) \ "result"
+        ((res \ "status").as[String] == "success").fold (
+          \/-("success"),
+          -\/((res \ "error_message").as[String]))
+        }
+      })
+    }
 
   def main(args: Array[String]) {
-    //println(create)
-    println(balance("gJE2Yf8JLjLTnuwceWZA5B6Dw4UPzp1iRS"))
+    val primary = create
+    println(primary)
+
+    @volatile var dt = 10000
+    def next()  = {
+      dt =  dt + 1
+      dt
+    }
+    primary.map(
+      p => makePayments(p)(20)
+    )
+
+    def makePayments(p: Account)(n: Int) = {
+      val accounts: IndexedSeq[\/[String, Account]] = for (i <- 1 to n) yield create
+      for {
+        account <- accounts
+        acc <- account
+        r = acc.result
+      } {
+        Thread.sleep(3000)
+        println(makePayment(r.accountId, r.masterSeed, p.result.accountId, "500" + "000000", next()))
+      }
+    }
+
+    //println(balance("g48BvpjobAFYVZurnbSFM3C5SGyTsjzTzt"))
+    primary.map(p => println(balance(p.result.accountId)))
     close()
   }
 
@@ -95,27 +213,4 @@ object Accounts {
         case e => throw new RuntimeException(e.toString)
       }), 10000)
   }
-
-
-
-  """
-    |{
-    |  "result": {
-    |    "account_data": {
-    |      "Account": "gMnXp1Eb5tAoRM5qK9uX84Ew5MXf7dNokK",
-    |      "Balance": "1000000000",
-    |      "Flags": 0,
-    |      "LedgerEntryType": "AccountRoot",
-    |      "OwnerCount": 0,
-    |      "PreviousTxnID": "75607A9C466F4DE07A56DA67F1F604014F719F3512EF8387306D62CC5D419B94",
-    |      "PreviousTxnLgrSeq": 507371,
-    |      "Sequence": 1,
-    |      "index": "24E86EF0A2BE205B92E94251B341EBC17A3FE5364F260880D5EB410142BAB6F6"
-    |    },
-    |    "ledger_current_index": 507378,
-    |    "status": "success"
-    |  }
-    |}
-  """.stripMargin
-
 }

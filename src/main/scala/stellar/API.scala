@@ -42,8 +42,6 @@ object API {
   val readTimeout = 100000
 
   def account_tx(account: String, ledgerIndexMin: Int = 0, perPage: Int = 1000): List[Transaction] = {
-
-
     // I use pagination terminology
     def getPage(marker: Option[JsValue]) : (List[Transaction], Option[JsValue]) = {
 
@@ -94,9 +92,8 @@ object API {
 
     allPages()
   }
-
-
-  def sign(account: String, destination: String, secret: String, amount: BigInt): OutTransaction = {
+  def sign(account: String, destination: String, secret: String, amount: BigInt, dt: Int): OutTransaction = {
+    println(s"SIGNING -> $account $destination $amount $dt")
     val data: JsValue = Json.obj(
       "method" -> "sign",
       "params" ->  Json.arr(
@@ -107,11 +104,13 @@ object API {
             "Account" -> account,
             "Destination" -> destination,
             "Amount" -> amount.toString,
-            "DestinationTag" -> Random.nextInt(100000000).toString
+            "DestinationTag" -> dt
           )
         )
       )
     )
+
+
 
     post(data, body => {
       val res = Json.parse(body) \ "result"
@@ -160,7 +159,7 @@ object API {
       val res = Json.parse(body) \ "result"
 
       require((res \ "status").as[String] == "success", (res \ "error_message").as[String])
-      println(Json.prettyPrint(res))
+      //println(Json.prettyPrint(res))
     })
 
   }
