@@ -13,19 +13,27 @@ object Main {
   val index = 509049
 
   def main(args: Array[String]) = {
-    start(LotteryCredentials("gsMxVfhj1GmHspP5iARzMxZBZmPya9NALr", io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString))
+    //start(LotteryCredentials("gsMxVfhj1GmHspP5iARzMxZBZmPya9NALr", io.Source.fromURL(getClass.getResource("/secret1")).getLines.mkString))
+    start(LotteryCredentials("g48BvpjobAFYVZurnbSFM3C5SGyTsjzTzt", "s3VPPYmPTTVe6Rb3GkZ6pSFqyuqkF2vMTAribpWzStb8BPMVLmv"))
   }
 
-
+  @volatile private var stopped = false
   //todo we want to restart the lottery which isn't possible right now!
   //passing lottery all over the place isn't ideal!!!
+
+  def stop(): Unit = {
+    println(s"!!!!!!! STOP Lottery")
+    this.stopped = true
+  }
+
   def start(lottery: LotteryCredentials) = {
+    println(s"!!!!!!! STARTING Lottery $lottery")
     init(lottery)
-    while (true) {
+    while (!stopped) {
       mainLoop(lottery)
     }
-
-    API.close(5000)
+    println(s"!!!!!!! STOPPED Lottery $lottery")
+    //API.close(5000)
   }
 
   // IN transactions that we don't need to handle anymore
