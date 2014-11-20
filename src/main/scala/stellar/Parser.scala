@@ -2,26 +2,99 @@ package stellar
 
 import play.api.libs.json.{JsArray, JsString, JsValue, Json}
 
+//the entire class hierarchy is horrible
+
 object Transaction {
-  def parseList(json: JsValue) : List[Transaction] = {
+  def parseList(json: JsValue): List[Transaction] = {
     val list = json.as[JsArray].value.toList
     list.map(parse _).toList
   }
 
-  def parse(json: JsValue) : Transaction = {
+  def parse(json: JsValue): Transaction = {
     // println(Json.prettyPrint(json))
     if ((json \ "tx" \ "TransactionType").as[String] == "Payment")
       new PaymentTransaction(json)
     else
-      new Transaction(json)
+      new NonPaymentTransaction(json)
   }
 }
 
 
-class Transaction(json: JsValue) {
-  def isPayment = false
+trait Transaction {
+
+  def rawJson:  JsValue
+
+  def isPayment: Boolean
+
+
+  // ## meta ##
+  def meta: JsValue
+
+  // Affected Nodes
+  // Transaction Index
+  // Transaction Result
+  def transactionResult: String
+
+  // ## tx ##
+  def tx: JsValue
+
+  // Account
+  def account: String
+
+  // Fee
+  def fee: BigInt
+
+  // Flags
+  // Sequence
+  // SigningPubKey
+  // TransactionType
+  def transactionType: String
+
+  // TxnSignature
+  // date
+  def date: Int
+
+  // hash
+  def hash: String
+
+  // inLedger
+  // ledger_index
+
+  // ## validated ##
+  def validated: Boolean
+
+
+  def destination: String
+
+  def tag: Option[Int]
+
+  def jsonAmount: JsValue
+
+  def amount: String
+
+  def currency: String
+
+
+  def valid = transactionResult == "tesSUCCESS" && validated
+
+  override def toString: String = {
+    val prettyAmount = if (currency == "STR") amount.toFloat / 1000000.0 else amount.toFloat
+    var str = s"$prettyAmount $currency"
+    if (transactionResult != "tesSUCCESS")
+      str += s" ${transactionResult}"
+    if (!validated)
+      str += " not validated!"
+    str
+  }
+}
+
+case class PaymentTransaction(val json: JsValue) extends Transaction{
+
+
+  def isPayment = transactionType == "Payment"
 
   val rawJson = json
+
 
   // ## meta ##
   val meta = json \ "meta"
@@ -43,6 +116,8 @@ class Transaction(json: JsValue) {
   val transactionType = (tx \ "TransactionType").as[String]
   // TxnSignature
   // date
+  val date = (tx \ "date").as[Int]
+
   // hash
   val hash = (tx \ "hash").as[String]
   // inLedger
@@ -51,33 +126,21 @@ class Transaction(json: JsValue) {
   // ## validated ##
   val validated = (json \ "validated").as[Boolean]
 
-  def incoming = false
-  def outgoing = false
 
-  override def toString: String = {
-    s"$transactionType $transactionResult"
-  }
+  val destination = (tx \ "Destination").as[String]
 
-}
+  val tag = (tx \ "DestinationTag").as[Option[Int]]
 
-case class PaymentTransaction(val json: JsValue) extends Transaction(json) {
-  override def isPayment = true
-
-  require(transactionType == "Payment")
-
-  val destination = (json \ "tx" \ "Destination").as[String]
-
-  val jsonAmount = json \ "tx" \ "Amount"
+  val jsonAmount = tx \ "Amount"
   val (amount, currency) = jsonAmount match {
     case JsString(value) => (value, "STR")
-    case _ => ( (jsonAmount \ "value").as[String], (jsonAmount \ "currency"))
+    case _ => ((jsonAmount \ "value").as[String], (jsonAmount \ "currency").as[String])
   }
 
-  def valid = transactionResult == "tesSUCCESS" && validated
 
   override def toString: String = {
     val prettyAmount = if (currency == "STR") amount.toFloat / 1000000.0 else amount.toFloat
-    var str =  s"$prettyAmount $currency"
+    var str = s"$prettyAmount $currency"
     if (transactionResult != "tesSUCCESS")
       str += s" ${transactionResult}"
     if (!validated)
@@ -85,3 +148,62 @@ case class PaymentTransaction(val json: JsValue) extends Transaction(json) {
     str
   }
 }
+
+
+//TODo replace the following : Stringabomination because of JSON modeling go argonaut
+
+class NonPaymentTransaction(json: JsValue) extends Transaction {
+  def rawJson = ???
+  def isPayment: Boolean = false
+
+
+  // ## meta ##
+  def meta: JsValue = ???
+
+  // Affected Nodes
+  // Transaction Index
+  // Transaction Result
+  def transactionResult: String = ???
+
+  // ## tx ##
+  def tx: JsValue = ???
+
+  // Account
+  def account: String = ???
+
+  // Fee
+  def fee = ???
+
+  // Flags
+  // Sequence
+  // SigningPubKey
+  // TransactionType
+  def transactionType: String = ???
+
+  // TxnSignature
+  // date
+  def date: Int = ???
+
+  // hash
+  def hash: String = ???
+
+  // inLedger
+  // ledger_index
+
+  // ## validated ##
+  def validated: Boolean = ???
+
+
+  def destination: String = ???
+
+  def tag  = ???
+
+  def jsonAmount: JsValue = ???
+
+  def amount: String = ???
+
+  def currency: String = ???
+
+}
+
+

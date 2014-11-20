@@ -2,7 +2,7 @@ import org.scalatest._
 import play.api.libs.json.{JsArray, JsValue, Json}
 import stellar.{OutTransaction, Transaction}
 
-import Main._
+/*import Main._
 
 class SanityCheck extends FlatSpec with Matchers {
 
@@ -54,4 +54,4 @@ class SanityCheck extends FlatSpec with Matchers {
     unprocessedInTransactions.size should be(2)
   }
 
-}
+}*/
