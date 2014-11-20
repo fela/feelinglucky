@@ -61,7 +61,8 @@ object Accounts {
   def getTransactions(myAccountId: String): List[Transaction] = API.account_tx(myAccountId, 0, 10000).filter(_.isPayment)
 
   //the following is for player as player is only interested in the stuff involving the lottery
-  def getTransactionsForPlayer(myAccountId: String, targetSystemId: String): List[Transaction] = getTransactions(myAccountId).filter(x => x.destination == targetSystemId || x.account == targetSystemId)
+  def getTransactionsForPlayer(myAccountId: String, targetSystemId: String): List[Transaction] =
+    getTransactions(myAccountId).filter(x => x.destination == targetSystemId || x.account == targetSystemId)
 
   case class IncomingTxLog(txs: List[Transaction])
   case class OutgoingTxLog(txs: List[Transaction])
@@ -83,6 +84,16 @@ object Accounts {
     out.txs.foreach(
       o => in.txs.find(i => i.tag == o.tag).fold({left += o; ()})(i => buff += Tuple2(o, i)) //pair if tags are equal
     )
+   /* println(
+      s"""
+        |pairs: ${buff.toList.mkString(",")}
+        |
+        |others: ${left.toList.mkString(",")}
+        |
+        |out: ${out.txs.mkString(",")}
+        |
+        |in: ${in.txs.mkString(",")}
+      """.stripMargin)*/
     (buff.toList, left.toList)
   }
 
@@ -114,11 +125,11 @@ object Accounts {
     }
   }, 200)
 
-  @volatile var i = 100000
   def paymentData(sender: String,
                   secret: String,
                   receiver: String,
-                  amount: String): String = {
+                  amount: String,
+                  dt: Int): String = {
     val data: JsValue = Json.obj(
       "method" -> "submit",
       "params" ->  Json.arr(
@@ -128,18 +139,18 @@ object Accounts {
             "TransactionType" -> "Payment",
             "Account" -> sender,
             "Destination" -> receiver,
-            "DestinationTag" -> i,
+            "DestinationTag" -> dt,
             "Amount" -> amount
           )
         )
       )
     )
-    i = i+1
     data.toString
   }
 
-  def makePayment(sender: String, secret: String,  receiver: String,  amount: String): \/[String, String] = {
-    post(stellar, paymentData(sender, secret, receiver, amount), {
+  def makePayment(sender: String, secret: String,  receiver: String,  amount: String,
+                  dt: Int): \/[String, String] = {
+    post(stellar, paymentData(sender, secret, receiver, amount, dt), {
       body => {
         //println(body)
         val res = Json.parse(body) \ "result"
@@ -153,6 +164,12 @@ object Accounts {
   def main(args: Array[String]) {
     val primary = create
     println(primary)
+
+    @volatile var dt = 10000
+    def next()  = {
+      dt =  dt + 1
+      dt
+    }
     primary.map(
       p => makePayments(p)(20)
     )
@@ -165,7 +182,7 @@ object Accounts {
         r = acc.result
       } {
         Thread.sleep(3000)
-        println(makePayment(r.accountId, r.masterSeed, p.result.accountId, "500" + "000000"))
+        println(makePayment(r.accountId, r.masterSeed, p.result.accountId, "500" + "000000", next()))
       }
     }
 

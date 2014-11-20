@@ -89,7 +89,8 @@ object API {
 
     allPages()
   }
-  def sign(account: String, destination: String, secret: String, amount: BigInt): OutTransaction = {
+  def sign(account: String, destination: String, secret: String, amount: BigInt, dt: Int): OutTransaction = {
+    println(s"SIGNING -> $account $destination $amount $dt")
     val data: JsValue = Json.obj(
       "method" -> "sign",
       "params" ->  Json.arr(
@@ -100,11 +101,13 @@ object API {
             "Account" -> account,
             "Destination" -> destination,
             "Amount" -> amount.toString,
-            "DestinationTag" -> Random.nextInt(100000000).toString
+            "DestinationTag" -> dt
           )
         )
       )
     )
+
+
 
     post(data, body => {
       val res = Json.parse(body) \ "result"

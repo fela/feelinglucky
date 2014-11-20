@@ -116,7 +116,7 @@ object Main {
     println(s"inProcessOutTransactions before: ${inProcessOutTransactions.size}")
     println(s"processedInTransactions before: ${processedInTransactions.size}")
     for (t <- transactions) {
-      val out = API.sign(lottery.id, t.account, lottery.hash, getAmount(t))
+      val out = API.sign(lottery.id, t.account, lottery.hash, getAmount(t), t.tag.getOrElse(-1))
       println(s"=====\nbefore ${inProcessOutTransactions.size}")
       inProcessOutTransactions += out
       println(s"after ${inProcessOutTransactions.size}")
