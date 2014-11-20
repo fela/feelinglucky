@@ -107,7 +107,6 @@ case class PaymentTransaction(val json: JsValue) extends Transaction{
   val tx = json \ "tx"
   // Account
   val account = (tx \ "Account").as[String]
-  val account = (tx \ "Account").as[String]
   // Fee
   val fee = BigInt((tx \ "Fee").as[String])
   // Flags
